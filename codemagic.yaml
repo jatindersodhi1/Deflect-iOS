@@ -3,12 +3,30 @@ workflows:
     name: Deflect iOS
     instance_type: mac_mini_m2
     max_build_duration: 120
-    environment:
-      unity: 2022.3.52f1  # Auto-installs LTS [web:330]
     scripts:
+      - name: Install Unity Hub & Unity 2022.3.52f1
+        script: |
+          # Install Unity Hub
+          curl -L -o UnityHub.pkg https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.pkg
+          sudo installer -pkg UnityHub.pkg -target /
+          
+          # Install Unity via Hub (headless)
+          /Applications/Unity\ Hub.app/Contents/MacOS/Unity\ Hub \
+            --headless \
+            --install-path /Applications \
+            2022.3.52f1
       - name: Build iOS
         script: |
-          $UNITY_HOME/Contents/MacOS/Unity \
+          # Find Unity path
+          UNITY_PATH=$(find /Applications -name "Unity.app" -path "*/2022.3.52f1/*" | head -1)
+          if [ -z "$UNITY_PATH" ]; then
+            echo "Unity not found, listing:"
+            find /Applications -name "Unity.app" | head -5
+            exit 1
+          fi
+          echo "Using Unity: $UNITY_PATH"
+          
+          $UNITY_PATH/Contents/MacOS/Unity \
             -batchmode -nographics -projectPath . \
             -buildTarget iOS -executeMethod BuildScript.BuildIos -quit
     artifacts:
