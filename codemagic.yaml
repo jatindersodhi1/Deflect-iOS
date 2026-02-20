@@ -1,0 +1,22 @@
+workflows:
+  unity-ios:
+    name: Deflect iOS
+    environment:
+      groups:
+        - apple_id_login  # Add in Codemagic UI later
+      vars:
+        UNITY_VERSION: 2022.3.52f1
+    scripts:
+      - name: Get Unity
+        script: |
+          curl -o unity.pkg "https://dl.unity3d.com/unity/$UNITY_VERSION/unity-$UNITY_VERSION.pkg"
+          sudo installer -dumplog -package unity.pkg
+      - name: Build iOS
+        script: |
+          /Applications/Unity/Hub/Editor/$UNITY_VERSION/Unity.app/Contents/MacOS/Unity \
+            -batchmode -projectPath . \
+            -buildTarget ios -executeMethod AutoBuilder.BuildIOS \
+            -quit -logfile /tmp/unity.log
+    artifacts:
+      - build/Deflect.xcarchive/**/*
+      - build/Deflect.ipa
