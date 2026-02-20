@@ -1,19 +1,18 @@
 workflows:
   unity-ios:
     name: Deflect iOS
-    instance_type: mac_pro
+    instance_type: mac_mini_m2
     max_build_duration: 120
     scripts:
       - name: Get Unity
         script: |
-          /usr/bin/curl -L -o unity.pkg "https://public-cdn.cloud.unity3d.com/hub/prod/UnityHubSetup.dmg"
-          hdiutil attach UnityHubSetup.dmg
-          sudo /Volumes/UnityHub/UnityHub.app/Contents/MacOS/UnityHub --headless --hosted-mode
+          curl -L -o Unity.pkg "https://dl.unity3d.com/unity/2022.3.52f1/lts/2022.3.52f1pkg"
+          sudo installer -verbose -pkg Unity.pkg -target /
       - name: Build iOS
         script: |
-          find /Applications/Unity -name Unity.app | head -1 | xargs -I {} /bin/bash -c "
-            {} -batchmode -projectPath . -buildTarget iOS -executeMethod UnityEditor.BuildPlayerWindow.DefaultBuildMethods.BuildPlayer -quit
-          "
+          /Applications/Unity/Hub/Editor/2022.3.52f1/Unity.app/Contents/MacOS/Unity \
+            -batchmode -nographics -projectPath . \
+            -buildTarget iOS -executeMethod BuildScript.BuildIos -quit
     artifacts:
+      - ios/**/*
       - build/**/*
-      - ios/builds/**/*
